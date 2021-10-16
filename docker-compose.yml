@@ -1,0 +1,42 @@
+version: '3'
+services:
+  elasticsearch:
+    container_name: researcher_elasticsearch
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        - ELASTIC_VER=7.10.1
+        - SUDACHI_PLUGIN_URL=https://github.com/WorksApplications/elasticsearch-sudachi/releases/download/v2.1.0/analysis-sudachi-7.10.1-2.1.0.zip
+        - SUDACHI_DICT_URL=http://sudachi.s3-website-ap-northeast-1.amazonaws.com/sudachidict/sudachi-dictionary-20210802-full.zip
+        - SUDACHI_DICT_DIR_NAME=sudachi-dictionary-20210802
+        - SUDACHI_DICT_ZIP=sudachi-dictionary-20210802-full.zip
+        # - INJEST_LANGDETECT_URL=https://github.com/spinscale/elasticsearch-ingest-langdetect/releases/download/7.10.1.1/ingest-langdetect-7.10.1.1.zip
+    ports:
+      - 9200:9200
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+    # ulimits:
+    #   memlock:
+    #     soft: -1
+    #     hard: -1
+    #   nofile:
+    #     soft: 65536
+    #     hard: 65536
+    expose:
+      - 9300
+  kibana:
+    container_name: researcher_kibana
+    image: docker.elastic.co/kibana/kibana:7.10.1
+    ports:
+      - 5601:5601
+
+volumes:
+  es-data:
+    name: researcher_data
+    driver: local
